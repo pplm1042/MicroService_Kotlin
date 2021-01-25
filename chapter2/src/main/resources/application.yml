@@ -1,9 +1,10 @@
 spring:
   profiles:
-    active: development
+    active: production
 
 service:
   message:
+    type: "simple"
     text: "hello"
 
 ---
@@ -20,4 +21,5 @@ spring:
 
 service:
   message:
+    type: "advance"
     text: "welcome"
