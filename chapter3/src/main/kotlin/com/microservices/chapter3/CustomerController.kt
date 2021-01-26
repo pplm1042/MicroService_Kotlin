@@ -1,18 +1,83 @@
 package com.microservices.chapter3
 
 import org.springframework.beans.factory.annotation.Autowired
-import org.springframework.web.bind.annotation.PathVariable
-import org.springframework.web.bind.annotation.RequestMapping
-import org.springframework.web.bind.annotation.RequestMethod
-import org.springframework.web.bind.annotation.ResponseBody
-import org.springframework.web.bind.annotation.RestController
-import java.util.concurrent.ConcurrentHashMap
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.*
+
+//import java.util.concurrent.ConcurrentHashMap
 
 @RestController
 class CustomerController {
     @Autowired
-    lateinit var customers : ConcurrentHashMap<Int, Customer>
+    private lateinit var customerService: CustomerService
 
-    @RequestMapping(value = ["/customer/{id}"], method = arrayOf(RequestMethod.GET))
-    fun getCustomer(@PathVariable id : Int) = customers[id]
+//    lateinit var customers: ConcurrentHashMap<Int, Customer>
+
+    @GetMapping(value = ["/customer/{id}"])
+    fun getCustomer(@PathVariable id : Int) : ResponseEntity<Customer?> {
+        val customer = customerService.getCustomer(id)
+        val status = if (customer == null) HttpStatus.NOT_FOUND else HttpStatus.OK
+        return ResponseEntity(customer, status)
+    }
+
+    @PostMapping(value = ["/customer/"])
+    fun createCustomer(@RequestBody customer: Customer) : ResponseEntity<Unit?> {
+        customerService.createCustomer(customer)
+        return ResponseEntity<Unit?>(null, HttpStatus.CREATED)
+    }
+
+    @DeleteMapping(value = ["/customer/{id}"])
+    fun deleteCustomer(@PathVariable id: Int) : ResponseEntity<Unit> {
+        var status = HttpStatus.NOT_FOUND
+        if (customerService.getCustomer(id) != null) {
+            customerService.deleteCustomer(id)
+            status = HttpStatus.OK
+        }
+        return ResponseEntity(Unit, status)
+    }
+
+    @PutMapping(value = ["/customer/{id}"])
+    fun updateCustomer(@PathVariable id: Int, @RequestBody customer : Customer) :
+    ResponseEntity<Unit> {
+        var status = HttpStatus.NOT_FOUND
+        if (customerService.getCustomer(id) != null) {
+            customerService.updateCustomer(id, customer)
+            status = HttpStatus.ACCEPTED
+        }
+        return ResponseEntity(Unit, status)
+    }
+
+    @GetMapping(value = ["/customers"])
+    fun getCustomer(@RequestParam(required = false, defaultValue = "") nameFilter: String) =
+            customerService.searchCustomers(nameFilter)
 }
+
+//    @RequestMapping(value = ["customers"], method = arrayOf(RequestMethod.GET))
+//    fun getCustomers() = customers.map(Map.Entry<Int, Customer>::value).toList()
+
+//    @RequestMapping(value = ["/customer/{id}"], method = arrayOf(RequestMethod.GET))
+//    fun getCustomer(@PathVariable id: Int) = customers[id]
+
+//    @RequestMapping(value = ["/customer/"], method = arrayOf(RequestMethod.POST))
+//    fun createCustomer(@RequestBody customer: Customer) {
+//        customers[customer.id] = customer
+//    }
+
+//    @RequestMapping(value = ["/customer/{id}"], method = arrayOf(RequestMethod.DELETE))
+//    fun deleteCustomer(@PathVariable id: Int) = customers.remove(id)
+
+//    @RequestMapping(value = ["/customer/{id}"], method = arrayOf(RequestMethod.PUT))
+//    fun updateCustomer(@PathVariable id: Int, @RequestBody customer: Customer)
+//    {
+//        customers.remove(id)
+//        customers[customer.id] = customer
+//    }
+
+
+//    fun getCustomers(@RequestParam(required = false, defaultValue = "")
+//    nameFilter: String) =
+//            customers.filter {
+//                it.value.name.contains(nameFilter, true)
+//            }.map(Map.Entry<Int, Customer>::value).toList()
+//}
