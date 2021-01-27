@@ -12,13 +12,13 @@ class CustomerController {
     @Autowired
     private lateinit var customerService: CustomerService
 
-//    lateinit var customers: ConcurrentHashMap<Int, Customer>
-
     @GetMapping(value = ["/customer/{id}"])
-    fun getCustomer(@PathVariable id : Int) : ResponseEntity<Customer?> {
-        val customer = customerService.getCustomer(id)
-        val status = if (customer == null) HttpStatus.NOT_FOUND else HttpStatus.OK
-        return ResponseEntity(customer, status)
+        fun getCustomer(@PathVariable id : Int) : ResponseEntity<Any> {
+            val customer = customerService.getCustomer(id)
+            return if (customer != null)
+                ResponseEntity(customer, HttpStatus.OK)
+            else
+                ResponseEntity(ErrorResponse("Customer Not Found", "customer '$id' not found"), HttpStatus.NOT_FOUND)
     }
 
     @PostMapping(value = ["/customer/"])
